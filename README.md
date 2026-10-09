@@ -6,7 +6,6 @@ OpenStreetMap mappers can add to the **JOSM** and **iD** editors as a reference
 overlay, plus a gap page listing where OSM's bus stops disagree with the City's.
 
 **Live layer and how to add it: https://guelph-maps.github.io/guelph-bus-stops-layer/**
-(once the first `python run.py update` has published it).
 
 Part of the [guelph-maps](https://github.com/guelph-maps) organisation. It is a
 clone of [guelph-parks-layer](https://github.com/guelph-maps/guelph-parks-layer)
