@@ -148,12 +148,13 @@ them.
 Run as Administrator:
 
 ```powershell
-.\schedule-add.ps1      # registers a weekly task "kk-GuelphBusStopsLayer", Wednesdays 16:30
+.\schedule-add.ps1      # registers a weekly task "kk-GuelphBusStopsLayer", Thursdays 16:30
 .\schedule-remove.ps1   # unregisters it
 ```
 
-Wednesday keeps it clear of the parks layers' Monday and Tuesday slots, so no
-two of them drive tippecanoe in the same WSL instance at once. Exit codes and
+Thursday keeps it clear of the parks layers' Monday and Tuesday slots and the
+buildings layer's Wednesday one, so no two of them drive tippecanoe in the same
+WSL instance at once. Exit codes and
 the restart policy are the parks layer's: **75** when there is no usable link
 (nothing was fetched or published), **70** after publishing when the gap page
 had to fall back to cached OSM.

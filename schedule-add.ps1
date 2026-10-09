@@ -12,11 +12,11 @@ $action = New-ScheduledTaskAction `
 
 # Weekly is enough: the stop list changes rarely, and
 # the City's service carries no edit date to poll anyway. The gap page is what
-# actually moves week to week -- it diffs against live OSM. Wednesdays 16:30
-# keeps this clear of guelph-parks-layer's Tuesday and toronto-parks-layer's
-# Monday slots, so none of them drive tippecanoe in the same WSL instance at
-# once.
-$trigger  = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Wednesday -At "16:30"
+# actually moves week to week -- it diffs against live OSM. Thursdays 16:30
+# keeps this clear of guelph-buildings-layer's Wednesday, guelph-parks-layer's
+# Tuesday and toronto-parks-layer's Monday slots, so none of them drive
+# tippecanoe in the same WSL instance at once.
+$trigger  = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Thursday -At "16:30"
 # Restart on failure. 'update' exits 75 as soon as it sees no usable link
 # instead of blocking on one (the ExecutionTimeLimit would kill a long wait
 # anyway), so three tries half an hour apart turn a dead link at 16:30 into a
@@ -32,5 +32,5 @@ $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hour
 
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Force
 
-Write-Host "Scheduled '$taskName' to run weekly on Wednesday at 16:30."
+Write-Host "Scheduled '$taskName' to run weekly on Thursday at 16:30."
 Write-Host "Log: $logFile"
