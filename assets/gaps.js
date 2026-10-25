@@ -25,6 +25,8 @@
   var highlight = null;  // ring + link line of the currently selected gap
   var selectedRow = null;
   var selectedIndex = null;  // feature index of the current selection
+  var JOSM = "http://127.0.0.1:8111/load_and_zoom";
+  var PAD_M = 30;  // metres of padding around a gap for the JOSM download box
 
   function init() {
     var el = document.getElementById("gap-map");
@@ -77,16 +79,21 @@
     wireControls();
   }
 
-  // Where to send the user for a feature: the openstreetmap.org view and the
-  // iD editor. Points at the existing OSM stop when there is one, else at the
-  // City's point.
+  // Where to send the user for a feature: the openstreetmap.org view, the
+  // iD editor and JOSM remote control. Points at the existing OSM stop when
+  // there is one, else at the City's point.
   function osmTargets(f) {
     var p = f.properties;
     var m = p.osm_url && p.osm_url.match(/(node|way|relation)\/(\d+)/);
+    // The OSM stop's position joins the JOSM box, so a "far" stop is
+    // downloaded and its select= lands.
+    var pts = [f.geometry.coordinates];
+    if (p.osm_lat != null && p.osm_lon != null) { pts.push([p.osm_lon, p.osm_lat]); }
     if (m) {
       return {
         osm: p.osm_url,
         id: "https://www.openstreetmap.org/edit?" + m[1] + "=" + m[2],
+        josm: josmUrl(pts, m[1] + m[2]),
       };
     }
     var c = f._center;
@@ -94,16 +101,38 @@
     return {
       osm: "https://www.openstreetmap.org/#map=19/" + ll,
       id: "https://www.openstreetmap.org/edit#map=19/" + ll,
+      josm: josmUrl(pts, null),
     };
   }
 
-  // "OSM · iD" link pair shared by the table and the popups.
+  // JOSM remote control: download the box around ``pts`` ([lon, lat] pairs)
+  // padded PAD_M, about 60 m across for one stop, and select the OSM stop.
+  function josmUrl(pts, select) {
+    var s = 90, w = 180, n = -90, e = -180;
+    pts.forEach(function (c) {
+      s = Math.min(s, c[1]); n = Math.max(n, c[1]);
+      w = Math.min(w, c[0]); e = Math.max(e, c[0]);
+    });
+    var dLat = PAD_M / 111320;
+    var dLon = PAD_M / (111320 * Math.cos((s + n) / 2 * Math.PI / 180));
+    return JOSM + "?left=" + (w - dLon).toFixed(6) +
+      "&right=" + (e + dLon).toFixed(6) + "&top=" + (n + dLat).toFixed(6) +
+      "&bottom=" + (s - dLat).toFixed(6) +
+      (select ? "&select=" + select : "") +
+      "&changeset_source=" + encodeURIComponent("City of Guelph Bus Stops");
+  }
+
+  // "OSM · iD · JOSM" links shared by the table and the popups. JOSM opens as
+  // a plain navigation in one reused tab named "josm", not a fetch: browsers
+  // gate background requests from a public page to localhost, not a click.
   function osmPairHtml(f) {
     var t = osmTargets(f);
     return '<a href="' + t.osm + '" target="_blank" rel="noopener" ' +
       'title="View on openstreetmap.org (hotkey: O)">OSM</a> &middot; ' +
       '<a href="' + t.id + '" target="_blank" rel="noopener" ' +
-      'title="Open in the iD editor (hotkey: I)">iD</a>';
+      'title="Open in the iD editor (hotkey: I)">iD</a> &middot; ' +
+      '<a href="' + esc(t.josm) + '" class="josm" target="josm" ' +
+      'title="Load this area into JOSM via remote control (hotkey: J)">JOSM</a>';
   }
 
   function popupHtml(f) {
@@ -235,16 +264,20 @@
     filter.addEventListener("input", apply);
     apply();
 
-    // O / I open the selected gap on openstreetmap.org / in the iD editor.
+    // O / I / J open the selected gap on openstreetmap.org, in iD or in JOSM.
     document.addEventListener("keydown", function (ev) {
       if (ev.ctrlKey || ev.metaKey || ev.altKey) { return; }
       if (/^(input|textarea|select)$/i.test(ev.target.tagName)) { return; }
       var key = ev.key.toLowerCase();
-      if (key !== "o" && key !== "i") { return; }
+      if (key !== "o" && key !== "i" && key !== "j") { return; }
       if (selectedIndex == null) { return; }
       var t = osmTargets(features[selectedIndex]);
       ev.preventDefault();
-      window.open(key === "o" ? t.osm : t.id, "_blank", "noopener");
+      if (key === "j") {
+        window.open(t.josm, "josm");
+      } else {
+        window.open(key === "o" ? t.osm : t.id, "_blank", "noopener");
+      }
     });
   }
 

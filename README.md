@@ -30,7 +30,9 @@ person who knows one knows the other. What differs follows from the geometry
   editors.
 - A **gap-review page** (`/gaps/`) on an interactive map and a filterable
   table, and its **history page** (`/gaps/history.html`) charting the counts,
-  one point per weekly run.
+  one point per weekly run. Each row links to openstreetmap.org, iD and JOSM
+  (<kbd>O</kbd>, <kbd>I</kbd>, <kbd>J</kbd> for the selected row); the JOSM
+  link needs JOSM running with Preferences &rarr; Remote Control enabled.
 
 ## The stop ID is the key
 
